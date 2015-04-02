@@ -21,10 +21,15 @@ var getHash = function(text) {
 
 var fileMapPath = path.join(__dirname, 'filemap.json');
 
-module = module.exports = function() {
+var buildHash = function() {
     return through2.obj(function(file, enc, callback) {
         var newPath = file.path.replace('all.js', 'all.min.js');
-        var packName = file.path.split(path.sep).pop().split('.all.')[0];
+        var paths = file.path.split(path.sep);
+        var packName = paths.pop().split('.all.')[0];
+
+        if(paths.pop() === 'tpl'){
+            packName = 'tpl/' + packName.replace('.js', '');
+        }
 
         file.path = newPath;
         var hash = getHash(file.contents);
@@ -55,3 +60,9 @@ module = module.exports = function() {
 
     });
 };
+
+buildHash.setPath = function(filePath){
+    fileMapPath = path.join(filePath, 'filemap.json');
+};
+
+module = module.exports = buildHash;
