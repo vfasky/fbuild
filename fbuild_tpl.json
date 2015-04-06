@@ -1,0 +1,18 @@
+{
+    "//": "自动打包的目录",
+    "pack": "./js/pack",
+
+    "//": "less目录",
+    "less": "./style/less",
+
+    "//": "tpl目录",
+    "tpl": "./tpl",
+
+    "//": "requireJS 的配置",
+    "requireConfig": {
+        "paths": {}
+    },
+
+    "//": "配置文件",
+    "configFile": "./js/config.js"
+}

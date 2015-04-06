@@ -27,7 +27,7 @@ var buildHash = function() {
         var paths = file.path.split(path.sep);
         var packName = paths.pop().split('.all.')[0];
 
-        if(paths.pop() === 'tpl'){
+        if (paths.pop() === 'tpl') {
             packName = 'tpl/' + packName.replace('.js', '');
         }
 
@@ -50,7 +50,7 @@ var buildHash = function() {
 
                 return FS.write(fileMapPath, JSON.stringify(data, null, 4));
             })
-            .then(function(){
+            .then(function() {
                 //console.log(file);
                 callback(null, file);
             })
@@ -61,8 +61,12 @@ var buildHash = function() {
     });
 };
 
-buildHash.setPath = function(filePath){
+buildHash.setPath = function(filePath) {
     fileMapPath = path.join(filePath, 'filemap.json');
+};
+
+buildHash.getPath = function(){
+    return fileMapPath;
 };
 
 module = module.exports = buildHash;
