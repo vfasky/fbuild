@@ -25,7 +25,7 @@ module = module.exports = function(basePath, configFile, config) {
                 requireConfig.paths = requireConfig.paths || {};
 
                 var paths = {};
-                var urlArgs = {};
+                //var urlArgs = {};
                 var keys = Object.keys(hashMap);
 
                 keys.forEach(function(v){
@@ -34,11 +34,11 @@ module = module.exports = function(basePath, configFile, config) {
 
                     pathArr.pop();
                     paths[v] = pathArr.join('.');
-                    urlArgs[v] = hashMap[v].hash;
+                    //urlArgs[v] = hashMap[v].hash;
                 });
 
                 requireConfig.paths = _.extend(paths, requireConfig.paths);
-                requireConfig.urlArgs = urlArgs;
+                //requireConfig.urlArgs = urlArgs;
 
                 var configStr = 'require.config(' +
                     JSON.stringify(requireConfig) +

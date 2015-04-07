@@ -14,6 +14,7 @@ var buildPack = require('./pack');
 var buildHash = require('./hash');
 var buildTpl = require('./tpl');
 var buildConfig = require('./config');
+var rename = require('./rename');
 var uglify = require('gulp-uglify');
 var path = require('path');
 var FS = require('q-io/fs');
@@ -47,6 +48,9 @@ var packTask = function(packPath) {
         .pipe(buildPack())
         .pipe(gulp.dest(packPath + '/dist'))
         .pipe(uglify())
+        .pipe(rename(function(filePath){
+            return filePath.replace('all.js', 'all.min.js');
+        }))
         .pipe(buildHash())
         .pipe(gulp.dest(packPath + '/dist'));
 };
@@ -61,8 +65,19 @@ var tplTask = function(sourePath) {
     return gulp.src(sourePath)
         .pipe(buildTpl())
         .pipe(uglify())
-        .pipe(gulp.dest(path.join(sourePath, '../../tpl')))
-        .pipe(buildHash());
+        .pipe(rename(function(filePath){
+            var paths = filePath.split(path.sep);
+            var name = paths.pop();
+            var newPath = path.join(
+                paths.join(path.sep),
+                '../js/tpl',
+                name
+            );
+            //console.log(newPath);
+            return newPath;
+        }))
+        .pipe(buildHash())
+        .pipe(gulp.dest(path.join(sourePath, '../../tpl')));
 };
 
 gulp.task('_pack', function() {
@@ -151,7 +166,7 @@ gulp.task('init', function(){
           return FS.copy(
               path.join(__dirname, 'fbuild_tpl.json'),
               path.join(sourePath, 'fbuild.json')
-          )
+          );
       });
 });
 
