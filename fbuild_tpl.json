@@ -8,6 +8,9 @@
     "//": "tpl目录",
     "tpl": "./tpl",
 
+    "//": "sprite目录",
+    "sprite": "./style/sprite_src",
+
     "//": "requireJS 的配置",
     "requireConfig": {
         "paths": {}

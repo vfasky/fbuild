@@ -1,3 +1,7 @@
+/**
+ * 生成配置文件
+ * @author vfasky <vfasky@gmail.com>
+ */
 "use strict";
 
 var through2 = require('through2');

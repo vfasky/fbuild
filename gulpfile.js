@@ -20,20 +20,21 @@ var path = require('path');
 var FS = require('q-io/fs');
 var watch = require('gulp-watch');
 var less = require('gulp-less');
+var spritesmith = require('gulp.spritesmith');
 
 /**
  * 构建less
  * @param {String} sourePath 源目录
  * @param {String} distPath  输出目录
  */
-var lessTask = function(sourePath, distPath){
-   console.log('build less: %s', sourePath);
+var lessTask = function(sourePath, distPath) {
+    console.log('build less: %s', sourePath);
 
-   return gulp.src(sourePath)
-       .pipe(less({
-           compress: true
-       }))
-       .pipe(gulp.dest(distPath || '../css'));
+    return gulp.src(sourePath)
+        .pipe(less({
+            compress: true
+        }))
+        .pipe(gulp.dest(distPath || '../css'));
 };
 
 
@@ -48,7 +49,7 @@ var packTask = function(packPath) {
         .pipe(buildPack())
         .pipe(gulp.dest(packPath + '/dist'))
         .pipe(uglify())
-        .pipe(rename(function(filePath){
+        .pipe(rename(function(filePath) {
             return filePath.replace('all.js', 'all.min.js');
         }))
         .pipe(buildHash())
@@ -65,7 +66,7 @@ var tplTask = function(sourePath) {
     return gulp.src(sourePath)
         .pipe(buildTpl())
         .pipe(uglify())
-        .pipe(rename(function(filePath){
+        .pipe(rename(function(filePath) {
             var paths = filePath.split(path.sep);
             var name = paths.pop();
             var newPath = path.join(
@@ -80,12 +81,92 @@ var tplTask = function(sourePath) {
         .pipe(gulp.dest(path.join(sourePath, '../../tpl')));
 };
 
+/**
+ * 生成雪碧图
+ * @param {String} sourePath 监听的目录
+ * @param {String=../sprite} outPath  图片输出目录
+ * @param {String=../less} lessPath  less 输出目录
+ */
+var spriteTask = function(sourePath, outPath, lessPath) {
+    console.log('build sprite: %s', sourePath);
+
+    var time = (new Date()).getTime();
+
+    sourePath = path.normalize(sourePath);
+
+    outPath = outPath ? path.normalize(outPath) : path.join(sourePath, '../sprite');
+    lessPath = lessPath ? path.normalize(lessPath) : path.join(sourePath, '../less');
+
+    var imgPath = path.relative(lessPath, outPath);
+
+    var paths = sourePath.split(path.sep);
+
+    var name = paths.pop();
+    if (!name) {
+        name = paths.pop();
+    }
+
+    var option = {
+        imgName: name + ".png",
+        cssName: "_sp_" + name + ".less",
+        imgPath: imgPath + '/' + name + ".png?" + time,
+        cssFormat: 'css',
+        algorithm: 'binary-tree',
+        cssOpts: {
+            cssSelector: function(item) {
+                return ".sp-" + name + "-" + item.name;
+            }
+        }
+    };
+
+    var pngPath = path.join(sourePath, '*.png');
+
+
+    var spriteData = gulp.src(pngPath)
+        .pipe(spritesmith(option));
+
+    //console.log(outPath);
+
+    spriteData.img.pipe(
+        gulp.dest(outPath)
+    );
+
+    spriteData.css.pipe(
+        gulp.dest(lessPath)
+    );
+
+};
+
 gulp.task('_pack', function() {
     var packPath = argv.path;
     if (!packPath) {
         throw new Error('path is null');
     }
     packTask(packPath);
+});
+
+/**
+ * 生成雪碧图
+ * @example gulp build.sprite --path=/Users/vfasky/test/src --lessPath=/Users/vfasky/test/less
+ * @return {Void}
+ */
+gulp.task('build.sprite', function(){
+    var sourePath = argv.path;
+    if (!sourePath) {
+        throw new Error('path is null');
+    }
+
+    var outPath = argv.out || null;
+    var lessPath = argv.lessPath || null;
+    var watchPath = path.join(sourePath, '*.png');
+
+    watch(watchPath, function(file) {
+        var paths = file.path.split(path.sep);
+        paths.splice(-1, 1);
+        var sourePath = paths.join(path.sep);
+
+        spriteTask(sourePath, outPath, lessPath);
+    });
 });
 
 /**
@@ -117,25 +198,25 @@ gulp.task('init.pack', function() {
     }
 
     FS.makeTree(path.join(packPath, 'src'))
-      .then(function(){
-          return FS.makeTree(path.join(packPath, 'dist'));
-      })
-      .then(function(){
-          return FS.makeTree(path.join(packPath, 'test'));
-      })
-      .then(function(){
-          var paths = packPath.split(path.sep);
-          var name = paths.pop();
-          if(!name){
-              name = paths.pop();
-          }
-          return FS.write(
-              path.join(packPath, 'src/index.js'),
-              'define(\''+ name +'\', [], function(){ \n'+
-              '    return {};\n' +
-              '});'
-          );
-      });
+        .then(function() {
+            return FS.makeTree(path.join(packPath, 'dist'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(packPath, 'test'));
+        })
+        .then(function() {
+            var paths = packPath.split(path.sep);
+            var name = paths.pop();
+            if (!name) {
+                name = paths.pop();
+            }
+            return FS.write(
+                path.join(packPath, 'src/index.js'),
+                'define(\'' + name + '\', [], function(){ \n' +
+                '    return {};\n' +
+                '});'
+            );
+        });
 });
 
 
@@ -143,31 +224,37 @@ gulp.task('init.pack', function() {
  * 初始化目录
  * @example gulp init --path=../static
  */
-gulp.task('init', function(){
+gulp.task('init', function() {
     var sourePath = argv.path;
     if (!sourePath) {
         throw new Error('path is null');
     }
 
     FS.makeTree(path.join(sourePath, 'js/pack'))
-      .then(function(){
-          return FS.makeTree(path.join(sourePath, 'js/tpl'));
-      })
-      .then(function(){
-          return FS.makeTree(path.join(sourePath, 'tpl'));
-      })
-      .then(function(){
-          return FS.makeTree(path.join(sourePath, 'style/less'));
-      })
-      .then(function(){
-          return FS.makeTree(path.join(sourePath, 'style/css'));
-      })
-      .then(function(){
-          return FS.copy(
-              path.join(__dirname, 'fbuild_tpl.json'),
-              path.join(sourePath, 'fbuild.json')
-          );
-      });
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'js/tpl'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'tpl'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'style/less'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'style/css'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'style/sprite_src'));
+        })
+        .then(function() {
+            return FS.makeTree(path.join(sourePath, 'style/sprite'));
+        })
+        .then(function() {
+            return FS.copy(
+                path.join(__dirname, 'fbuild_tpl.json'),
+                path.join(sourePath, 'fbuild.json')
+            );
+        });
 });
 
 /**
@@ -223,7 +310,7 @@ gulp.task('default', function() {
 
             }
             //less 自动构建
-            if(config.less){
+            if (config.less) {
                 var watchPath = path.join(basePath, config.less, '**/*.less');
 
                 watch(watchPath, function(file) {
@@ -231,11 +318,26 @@ gulp.task('default', function() {
 
                     var distPath = path.join(basePath, config.less, '../css');
                     var name = paths[paths.length - 2];
-                    if(name !== config.less.split(path.sep).pop()){
-                       distPath = path.join(distPath, name);
+                    if (paths[paths.length - 1].indexOf('_') === 0) {
+                        return;
+                    }
+                    if (name !== config.less.split(path.sep).pop()) {
+                        distPath = path.join(distPath, name);
                     }
 
                     lessTask(file.path, distPath);
+                });
+            }
+            //sprite 自动构建
+            if(config.sprite){
+                var watchPath = path.join(basePath, config.sprite, '**/*.png');
+
+                watch(watchPath, function(file){
+                    var paths = file.path.split(path.sep);
+                    paths.splice(-1, 1);
+                    var sourePath = paths.join(path.sep);
+
+                    spriteTask(sourePath);
                 });
             }
         })
