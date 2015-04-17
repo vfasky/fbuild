@@ -53,9 +53,16 @@ var buildHash = function() {
                 paths[paths.length - 1] = match;
                 delPath = paths.join(path.sep);
 
+                var devPath = false;
+                if(name.indexOf('.min.') !== -1){
+                    paths[paths.length - 1] = soureName.replace('.min.js', '.js');
+                    devPath = paths.join(path.sep);
+                }
+
                 data[packName] = {
                     hash: hash,
-                    path: file.path
+                    path: file.path,
+                    devPath: devPath
                 };
 
                 return FS.write(fileMapPath, JSON.stringify(data, null, 4));
@@ -81,4 +88,4 @@ buildHash.getPath = function(){
     return fileMapPath;
 };
 
-module = module.exports = buildHash;
+module.exports = buildHash;

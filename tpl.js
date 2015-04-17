@@ -10,7 +10,7 @@ var through2 = require('through2');
 var FS = require("q-io/fs");
 var path = require('path');
 
-module = module.exports = function() {
+module.exports = function() {
     return through2.obj(function(file, enc, callback) {
         var srcPath = file.path;
 
