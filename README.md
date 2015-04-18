@@ -95,6 +95,18 @@ require(['tpl/pack'], function(pack){
 
 > !!默认!! 最后编辑那个版本，就用那个版本
 
+如需要指定版本，请编辑 fbuild.json
+
+```js
+{
+    "//": "指定包的版本,注：如果没有指定，修改那个版本，就使用那个版本",
+    "packVersion": {
+        "packName": "1.0.4"
+    }
+
+}
+```
+
 #### 升级fbuild
 
 ```bash
