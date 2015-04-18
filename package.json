@@ -1,13 +1,16 @@
 {
   "name": "fbuild",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "build tool",
   "repository": {
     "type": "git",
     "url": "https://github.com/vfasky/fbuild.git",
     "web": "https://github.com/vfasky/fbuild"
   },
-  "main": "gulpfile.js",
+  "main": "./index.js",
+  "bin": {
+    "fbuild": "./bin/fbuild.js"
+  },
   "scripts": {
     "test": ""
   },

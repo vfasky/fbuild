@@ -4,6 +4,7 @@ FBuild - 自动化构建工具
 - 支持按目录打包
 - 支持less自动编译
 - html模板编译成 AMD 规则的包
+- 加入雪碧图生成
 
 ### 快速开始
 
@@ -12,19 +13,19 @@ FBuild - 自动化构建工具
 ```bash
 npm install fbuild -g
 cd [目录]
-fbuild.js init 
+fbuild init 
 ```
 
 #### 初始化一个包 'hello'
 
 ```bash
-fbuild.js init.pack hello
+fbuild init.pack hello
 ```
 
 #### 开启自动构建监视
 
 ```bash
-fbuild.js
+fbuild
 ```
 
 #### 向包 'hello' 添加内容
