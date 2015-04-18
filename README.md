@@ -11,7 +11,7 @@ FBuild - 自动化构建工具
 #### 安装并初始化目录结构
 
 ```bash
-npm install fbuild -g
+sudo npm install fbuild -g
 cd [目录]
 fbuild init 
 ```
@@ -84,3 +84,11 @@ require(['tpl/pack'], function(pack){
     |- less #less源文件存放目录
     |- css #编译后的文件存放目录
 ```
+
+#### 升级fbuild
+
+```bash
+sudo npm update -g fbuild
+```
+
+
