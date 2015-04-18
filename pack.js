@@ -50,8 +50,10 @@ module.exports = function() {
                 var soure = args.join('\n;\n');
                 var paths = file.path.split(path.sep);
 
+                
+
                 var name = paths.pop();
-                if(!name){
+                if(/^[0-9]/.exec(name)){
                     name = paths.pop();
                 }
 

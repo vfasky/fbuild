@@ -42,7 +42,7 @@ var lessTask = function(sourePath, distPath) {
  * 构建pack
  * @param {String} packPath 目录
  */
-var packTask = function(packPath) {
+var packTask = function(packPath, packVersion) {
 
     console.log('build pack: %s', packPath);
     return gulp.src(packPath)
@@ -52,7 +52,7 @@ var packTask = function(packPath) {
         .pipe(rename(function(filePath) {
             return filePath.replace('all.js', 'all.min.js');
         }))
-        .pipe(buildHash())
+        .pipe(buildHash(packVersion))
         .pipe(gulp.dest(packPath + '/dist'));
 };
 
@@ -197,12 +197,14 @@ gulp.task('init.pack', function() {
         throw new Error('path is null');
     }
 
-    FS.makeTree(path.join(packPath, 'src'))
+    var version = argv.version || '1.0.0';
+
+    FS.makeTree(path.join(packPath, version, 'src'))
         .then(function() {
-            return FS.makeTree(path.join(packPath, 'dist'));
+            return FS.makeTree(path.join(packPath, version, 'dist'));
         })
         .then(function() {
-            return FS.makeTree(path.join(packPath, 'test'));
+            return FS.makeTree(path.join(packPath, version, 'test'));
         })
         .then(function() {
             var paths = packPath.split(path.sep);
@@ -211,7 +213,7 @@ gulp.task('init.pack', function() {
                 name = paths.pop();
             }
             return FS.write(
-                path.join(packPath, 'src/index.js'),
+                path.join(packPath, version, 'src/index.js'),
                 'define(\'' + name + '\', [], function(){ \n' +
                 '    return {};\n' +
                 '});'
@@ -290,7 +292,7 @@ gulp.task('default', function() {
                     paths.splice(-2, 2);
                     var packPath = paths.join(path.sep);
 
-                    packTask(packPath).pipe(
+                    packTask(packPath, config.packVersion).pipe(
                         buildConfig(basePath, configFile, config)
                     );
                 });

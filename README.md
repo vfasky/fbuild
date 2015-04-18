@@ -21,6 +21,11 @@ fbuild init
 ```bash
 fbuild init.pack hello
 ```
+##### 初始化 1.0.2 的包 'hello'
+
+```bash
+fbuild init.pack hello 1.0.2
+```
 
 #### 开启自动构建监视
 
@@ -40,6 +45,7 @@ fbuild sp out=../img less=../less
 ```
 |- static
   |- js
+    |- fbuild.json #fbuild 的配置文件
     |- config.js #根据构建的内容，自动生成配置
     |- config.dev.js #根据构建的内容，自动生成配置, dev 环境
     |- pack

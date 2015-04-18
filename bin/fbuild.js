@@ -34,8 +34,12 @@ else{
                 throw new Error('pack name is null');
             }
             var packPath = path.join(sourePath, 'js/pack/', packName);
+            var _args = ['init.pack', '--path=' + packPath];
+            if(args.length === 3){
+                _args.push('--version=' + args[2]);
+            }
 
-            proc = spawn('gulp', ['init.pack', '--path=' + packPath], {
+            proc = spawn('gulp', _args, {
                 cwd: __dirname
             });
             break;

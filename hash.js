@@ -22,7 +22,8 @@ var getHash = function(text) {
 
 var fileMapPath = path.join(__dirname, 'filemap.json');
 
-var buildHash = function() {
+var buildHash = function(packVersion) {
+    packVersion = packVersion || {};
     return through2.obj(function(file, enc, callback) {
         //var newPath = file.path.replace('all.js', 'all.min.js');
         var paths = file.path.split(path.sep);
@@ -57,6 +58,14 @@ var buildHash = function() {
                 if(name.indexOf('.min.') !== -1){
                     paths[paths.length - 1] = soureName.replace('.min.js', '.js');
                     devPath = paths.join(path.sep);
+                }
+
+                if(packVersion[packName]){
+                    var version = paths[paths.length - 3];
+                    if(version !== packVersion[packName]){
+                        console.log('not build config.js');
+                        return;
+                    }
                 }
 
                 data[packName] = {
