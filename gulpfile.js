@@ -331,13 +331,21 @@ gulp.task('default', function() {
             //sprite 自动构建
             if(config.sprite){
                 var watchPath = path.join(basePath, config.sprite, '**/*.png');
+                var spriteImg = null;
+                var spriteLess = null;
+                if(config.spriteImg){
+                    spriteImg = path.join(basePath, config.spriteImg);
+                }
+                if(config.spriteLess){
+                    spriteLess = path.join(basePath, config.spriteLess);
+                }
 
                 watch(watchPath, function(file){
                     var paths = file.path.split(path.sep);
                     paths.splice(-1, 1);
                     var sourePath = paths.join(path.sep);
 
-                    spriteTask(sourePath);
+                    spriteTask(sourePath, spriteImg, spriteLess);
                 });
             }
         })

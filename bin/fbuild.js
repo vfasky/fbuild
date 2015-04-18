@@ -39,6 +39,30 @@ else{
                 cwd: __dirname
             });
             break;
+        case 'sp': 
+        case 'sprite':
+            var spArgs = ['build.sprite', '--path=' + sourePath];
+            var len = args.length;
+            for(var i=1; i<len; i++){
+                var v = args[i].trim();
+                var val = v.split('=').pop();
+                if(val.indexOf('.') === 0){
+                    val = path.join(sourePath, val);
+                    //console.log(val);
+                }
+                if(v.indexOf('out=') === 0){
+                    spArgs.push('--out=' + val);
+                }
+                else if(v.indexOf('less=') === 0){
+                    spArgs.push('--lessPath=' + val);
+                }
+            }
+            //console.log('gulp ' + spArgs.join(' '));
+            proc = spawn('gulp', spArgs, {
+                cwd: __dirname
+            });
+
+            break;
     }
 }
 

@@ -10,6 +10,8 @@
 
     "//": "sprite目录",
     "sprite": "./style/sprite_src",
+    "spriteImg" : "./style/sprite",
+    "spriteLess" : "./style/less",
 
     "//": "requireJS 的配置",
     "requireConfig": {

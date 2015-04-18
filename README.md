@@ -28,19 +28,20 @@ fbuild init.pack hello
 fbuild
 ```
 
-#### 向包 'hello' 添加内容
+#### 单独构建雪碧图
 
 ```bash
-vim ../static/js/pack/hello/src/word.js
-vim ../static/js/pack/hello/src/index.js
+cd [png目录]
+fbuild sp out=../img less=../less
 ```
 
-#### 保存后，目录结构是这样的
+#### fbuild 目录结构是这样的
 
 ```
 |- static
   |- js
     |- config.js #根据构建的内容，自动生成配置
+    |- config.dev.js #根据构建的内容，自动生成配置, dev 环境
     |- pack
       |- hello
         |- dist
