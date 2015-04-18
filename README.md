@@ -10,20 +10,21 @@ FBuild - 自动化构建工具
 #### 安装并初始化目录结构
 
 ```bash
-npm install fbuild
-gulp init --path=../static
+npm install fbuild -g
+cd [目录]
+fbuild.js init 
 ```
 
 #### 初始化一个包 'hello'
 
 ```bash
-gulp init.pack --path=../static/js/pack/hello
+fbuild.js init.pack hello
 ```
 
 #### 开启自动构建监视
 
 ```bash
-gulp --path=../static
+fbuild.js
 ```
 
 #### 向包 'hello' 添加内容
