@@ -14,6 +14,7 @@ var buildPack = require('./pack');
 var buildHash = require('./hash');
 var buildTpl = require('./tpl');
 var buildConfig = require('./config');
+var buildChange = require('./change');
 var rename = require('./rename');
 var uglify = require('gulp-uglify');
 var path = require('path');
@@ -21,20 +22,22 @@ var FS = require('q-io/fs');
 var watch = require('gulp-watch');
 var less = require('gulp-less');
 var spritesmith = require('gulp.spritesmith');
+var spawn = require('child_process').spawn;
 
 /**
  * 构建less
  * @param {String} sourePath 源目录
  * @param {String} distPath  输出目录
  */
-var lessTask = function(sourePath, distPath) {
+var lessTask = function(sourePath, distPath, done) {
     console.log('build less: %s', sourePath);
 
     return gulp.src(sourePath)
         .pipe(less({
             compress: true
         }))
-        .pipe(gulp.dest(distPath || '../css'));
+        .pipe(gulp.dest(distPath || '../css'))
+        .pipe(buildChange(done || function(){}));
 };
 
 
@@ -188,6 +191,53 @@ gulp.task('build.pack', ['_pack'], function() {
 });
 
 /**
+ * 构建文档 
+ *
+ * @return {Void}
+ */
+gulp.task('build.doc', function(){
+    var packPath = argv.path;
+    if (!packPath) {
+        throw new Error('path is null');
+    } 
+    var version = argv.version || '1.0.0';
+
+    packPath = path.join(packPath, version);
+
+    var template = path.join(__dirname, 'node_modules/minami');
+    var jsdocCfg = path.join(packPath, 'jsdoc.json');
+
+    FS.read(path.join(__dirname, 'jsdoc.json')).then(function(json){
+        var data = JSON.parse(json);
+        data.opts.template = template;
+        data.opts.destination = path.join(packPath, 'docs');
+        data.source.include.push(
+            path.join(packPath, 'src')
+        );
+
+        return FS.write(jsdocCfg, JSON.stringify(data)); 
+    }).then(function(){
+        var proc = spawn(
+            path.join(__dirname, 'node_modules/jsdoc/jsdoc.js'),
+            ['-c', jsdocCfg]
+        );
+        //console.log(path.join(__dirname, 'node_modules/jsdoc/jsdoc.js'));
+        //console.log('-c ' + jsdocCfg);
+        proc.stdout.on('data', function (data) {
+            console.log(data.toString());
+        });
+
+        proc.stderr.on('data', function (data) {
+            console.log(data.toString());
+        });
+
+    }).fail(function(err){
+        throw new Error(err);
+    });
+    
+});
+
+/**
  * 初始化包目录
  * @example gulp init.pack --path=../static/js/pack/test
  */
@@ -256,6 +306,12 @@ gulp.task('init', function() {
                 path.join(__dirname, 'fbuild_tpl.json'),
                 path.join(sourePath, 'fbuild.json')
             );
+        })
+        .then(function() {
+            return FS.copy(
+                path.join(__dirname, 'fbuild_plug_tpl.js'),
+                path.join(sourePath, 'fbuild_plug.js')
+            );
         });
 });
 
@@ -278,11 +334,13 @@ gulp.task('default', function() {
     buildHash.setPath(sourePath);
 
     var configPath = path.join(sourePath, 'fbuild.json');
+    var plug = require(path.join(sourePath, 'fbuild_plug'));
+    var config;
 
     FS.read(configPath)
-        .then(function(json) {
-            var config = JSON.parse(json);
+        .then(function(json){
             var basePath = sourePath;
+            config = JSON.parse(json);
 
             //pack 自动构建
             if (config.pack) {
@@ -292,8 +350,16 @@ gulp.task('default', function() {
                     paths.splice(-2, 2);
                     var packPath = paths.join(path.sep);
 
+                    //插件
+                    plug.changeFile.pack(file);
+
                     packTask(packPath, config.packVersion).pipe(
-                        buildConfig(basePath, configFile, config)
+                        buildConfig(
+                            basePath, 
+                            configFile, 
+                            config, 
+                            plug.changeFile.config
+                        )
                     );
                 });
             }
@@ -306,7 +372,12 @@ gulp.task('default', function() {
                     var sourePath = paths.join(path.sep);
 
                     tplTask(sourePath).pipe(
-                        buildConfig(basePath, configFile, config)
+                        buildConfig(
+                            basePath, 
+                            configFile, 
+                            config,
+                            plug.changeFile.config
+                        )
                     );
                 });
 
@@ -327,7 +398,7 @@ gulp.task('default', function() {
                         distPath = path.join(distPath, name);
                     }
 
-                    lessTask(file.path, distPath);
+                    lessTask(file.path, distPath, plug.changeFile.less);
                 });
             }
             //sprite 自动构建

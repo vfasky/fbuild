@@ -27,6 +27,14 @@ fbuild init.pack hello
 fbuild init.pack hello 1.0.2
 ```
 
+##### 生成 'hello' 包文档
+
+```bash
+fbuild build.doc hello 
+# 生成1.0.2文档
+fbuild build.doc hello 1.0.2 
+```
+
 #### 开启自动构建监视
 
 ```bash

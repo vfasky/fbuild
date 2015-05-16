@@ -10,12 +10,12 @@ var path = require('path');
 var hash = require('./hash');
 var _ = require('lodash');
 
-module.exports = function(basePath, configFile, config) {
+module.exports = function(basePath, configFile, config, done) {
     return through2.obj(function(file, enc, callback) {
         if(!configFile){
             return callback(null, file);
         }
-
+        done = done || function(){};
         basePath = path.resolve(basePath);
         configFile = path.resolve(configFile);
         var configDevFile = configFile.replace('.js', '.dev.js');
@@ -79,6 +79,7 @@ module.exports = function(basePath, configFile, config) {
                 ];
 
             }).spread(function(){
+                done();
                 callback(null, file);
             });
 

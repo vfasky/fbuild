@@ -1,0 +1,21 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc"]
+    },
+    "source": {
+        "include": [],
+        "includePattern": ".+\\.js(doc)?$",
+        "excludePattern": "(node_modules/|docs)"
+    },
+    "opts": {
+        "encoding": "utf8",
+        "private": true,
+        "recurse": true
+    },
+    "plugins": ["plugins/markdown"],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": true
+    }
+}

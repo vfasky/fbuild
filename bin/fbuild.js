@@ -43,6 +43,22 @@ else{
                 cwd: __dirname
             });
             break;
+        case 'build.doc':
+            var packName = args[1];
+            if(!packName){
+                throw new Error('pack name is null');
+            }
+            var packPath = path.join(sourePath, 'js/pack/', packName);
+            var _args = ['build.doc', '--path=' + packPath];
+            if(args.length === 3){
+                _args.push('--version=' + args[2]);
+            }
+
+            proc = spawn('gulp', _args, {
+                cwd: __dirname
+            });
+            break;
+
         case 'sp': 
         case 'sprite':
             var spArgs = ['build.sprite', '--path=' + sourePath];

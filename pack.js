@@ -31,7 +31,7 @@ module.exports = function() {
                         hasIndex = true;
                         return false;
                     }
-                    if(v.indexOf('.js') !== -1){
+                    if(path.extname(v) === '.js'){
                         task.push(FS.read(
                             path.join(srcPath, v)
                         ));

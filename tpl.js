@@ -27,7 +27,7 @@ module.exports = function() {
                     if (v.indexOf('.') === 0) {
                         return false;
                     }
-                    if(v.indexOf('.html') !== -1){
+                    if(path.extname(v) === '.html'){
                         task.push(FS.read(
                             path.join(srcPath, v)
                         ));
