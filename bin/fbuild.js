@@ -83,6 +83,13 @@ else{
             });
 
             break;
+            
+        case 'pack.all':
+            var packArgs = ['pack.all', '--basePath=' + path.join(sourePath, 'static'), '--path=' + args[1]];
+            proc = spawn('gulp', packArgs, {
+                cwd: __dirname
+            });
+            break;
     }
 }
 

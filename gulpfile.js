@@ -271,6 +271,31 @@ gulp.task('init.pack', function() {
         });
 });
 
+/**
+ * 自动打包
+ * @example gulp pack.all --basePath=./static --path=../static
+ */
+gulp.task('pack.all', function() {
+    var packPath = argv.path;
+    var basePath = argv.basePath;
+    var configFile = argv.config || path.join(basePath, 'js/config.js');
+    var configPath = path.join(basePath, 'fbuild.json');
+
+    if (!packPath) {
+        throw new Error('path is null');
+    }
+
+    FS.read(configPath).then(function(json) {
+        var config = JSON.parse(json);
+        packTask(packPath, {}).pipe(
+            buildConfig(
+                basePath,
+                configFile,
+                config
+            )
+        );
+    });
+});
 
 /**
  * 初始化目录
