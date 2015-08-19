@@ -11,6 +11,7 @@
 var path = require('path');
 var spawn = require('child_process').spawn;
 var sourePath = process.cwd();
+var FS = require('../node_modules/q-io/fs');
 process.env.INIT_CWD = sourePath;
 
 var args = process.argv.slice(2);
@@ -25,6 +26,28 @@ else{
     switch(args[0].trim()){
         case 'init':
             proc = spawn('gulp', ['init', '--path=' + sourePath], {
+                cwd: __dirname
+            });
+            break;
+        case 'init.githook':
+            var url = args[1];
+            if(!url){
+                throw new Error('path is null');
+            }
+            FS.copy(
+                path.join(__dirname, '../post-merge'),
+                path.join(url, './git/hook/post-merge')
+            );
+            break;
+        case 'build.tpl':
+            var tplPath = args[1];
+            if(!tplPath){
+                throw new Error('path is null');
+            }
+            var _args = ['build.tpl', '--path=' + tplPath];
+            //console.log(tplPath);
+
+            proc = spawn('gulp', _args, {
                 cwd: __dirname
             });
             break;
@@ -59,7 +82,7 @@ else{
             });
             break;
 
-        case 'sp': 
+        case 'sp':
         case 'sprite':
             var spArgs = ['build.sprite', '--path=' + sourePath];
             var len = args.length;

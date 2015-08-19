@@ -34,7 +34,7 @@ module.exports = function(basePath, configFile, config, done) {
                 var requireConfigDev = _.extend({
                     paths: {}
                 }, config.requireConfig);
-           
+
                 var paths = {};
                 var devPaths = {};
                 //var urlArgs = {};
@@ -47,7 +47,7 @@ module.exports = function(basePath, configFile, config, done) {
 
                     pathArr.pop();
                     paths[v] = pathArr.join('.');
-                    
+
                     if(item.devPath){
                         var devPathArr = String(item.devPath).replace(basePath, '.')
                                                              .split('.');
@@ -63,16 +63,16 @@ module.exports = function(basePath, configFile, config, done) {
 
 
                 requireConfigDev.paths = _.extend(devPaths, requireConfigDev.paths);
-                var configDevStr = 'require.config(' +
+                var configDevStr = 'requirejs.config(' +
                     JSON.stringify(requireConfigDev, null, 4) +
                 ');';
 
                 requireConfig.paths = _.extend(paths, requireConfig.paths);
 
-                var configStr = 'require.config(' +
+                var configStr = 'requirejs.config(' +
                     JSON.stringify(requireConfig) +
                 ');';
-                
+
                 return [
                     FS.write(configFile, configStr),
                     FS.write(configDevFile, configDevStr)

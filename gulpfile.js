@@ -21,6 +21,8 @@ var path = require('path');
 var FS = require('q-io/fs');
 var watch = require('gulp-watch');
 var less = require('gulp-less');
+var plumber = require('gulp-plumber');
+var sass = require('gulp-sass');
 var spritesmith = require('gulp.spritesmith');
 var spawn = require('child_process').spawn;
 
@@ -37,7 +39,22 @@ var lessTask = function(sourePath, distPath, done) {
             compress: true
         }))
         .pipe(gulp.dest(distPath || '../css'))
-        .pipe(buildChange(done || function(){}));
+        .pipe(buildChange(done || function() {}));
+};
+
+/**
+ * 构建sass
+ * @param {String} sourePath 源目录
+ * @param {String} distPath  输出目录
+ */
+var sassTask = function(sourePath, distPath, done) {
+    console.log('build sass: %s', sourePath);
+
+    return gulp.src(sourePath)
+        .pipe(plumber())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(distPath || '../css'))
+        .pipe(buildChange(done || function() {}));
 };
 
 
@@ -153,7 +170,7 @@ gulp.task('_pack', function() {
  * @example gulp build.sprite --path=/Users/vfasky/test/src --lessPath=/Users/vfasky/test/less
  * @return {Void}
  */
-gulp.task('build.sprite', function(){
+gulp.task('build.sprite', function() {
     var sourePath = argv.path;
     if (!sourePath) {
         throw new Error('path is null');
@@ -191,15 +208,15 @@ gulp.task('build.pack', ['_pack'], function() {
 });
 
 /**
- * 构建文档 
+ * 构建文档
  *
  * @return {Void}
  */
-gulp.task('build.doc', function(){
+gulp.task('build.doc', function() {
     var packPath = argv.path;
     if (!packPath) {
         throw new Error('path is null');
-    } 
+    }
     var version = argv.version || '1.0.0';
 
     packPath = path.join(packPath, version);
@@ -207,7 +224,7 @@ gulp.task('build.doc', function(){
     var template = path.join(__dirname, 'node_modules/minami');
     var jsdocCfg = path.join(packPath, 'jsdoc.json');
 
-    FS.read(path.join(__dirname, 'jsdoc.json')).then(function(json){
+    FS.read(path.join(__dirname, 'jsdoc.json')).then(function(json) {
         var data = JSON.parse(json);
         data.opts.template = template;
         data.opts.destination = path.join(packPath, 'docs');
@@ -215,27 +232,28 @@ gulp.task('build.doc', function(){
             path.join(packPath, 'src')
         );
 
-        return FS.write(jsdocCfg, JSON.stringify(data)); 
-    }).then(function(){
+        return FS.write(jsdocCfg, JSON.stringify(data));
+    }).then(function() {
         var proc = spawn(
-            path.join(__dirname, 'node_modules/jsdoc/jsdoc.js'),
-            ['-c', jsdocCfg]
+            path.join(__dirname, 'node_modules/jsdoc/jsdoc.js'), ['-c', jsdocCfg]
         );
         //console.log(path.join(__dirname, 'node_modules/jsdoc/jsdoc.js'));
         //console.log('-c ' + jsdocCfg);
-        proc.stdout.on('data', function (data) {
+        proc.stdout.on('data', function(data) {
             console.log(data.toString());
         });
 
-        proc.stderr.on('data', function (data) {
+        proc.stderr.on('data', function(data) {
             console.log(data.toString());
         });
 
-    }).fail(function(err){
+    }).fail(function(err) {
         throw new Error(err);
     });
-    
+
 });
+
+
 
 /**
  * 初始化包目录
@@ -316,6 +334,40 @@ gulp.task('init', function() {
 });
 
 /**
+ * 构建模板
+ */
+gulp.task('build.tpl', function() {
+    var pathUrl = argv.path;
+    if (!pathUrl) {
+        throw new Error('path is null');
+    }
+    var sourePath = path.join(pathUrl, '../../');
+
+    var configFile = path.join(sourePath, 'js/config.js');
+
+    buildHash.setPath(sourePath);
+
+    var configPath = path.join(sourePath, 'fbuild.json');
+    var plug = require(path.join(sourePath, 'fbuild_plug'));
+    var config;
+
+    FS.read(configPath)
+        .then(function(json) {
+            var basePath = sourePath;
+            config = JSON.parse(json);
+            tplTask(pathUrl).pipe(
+                buildConfig(
+                    basePath,
+                    configFile,
+                    config,
+                    plug.changeFile.config
+                )
+            );
+        });
+});
+
+
+/**
  * 执行自动化工具
  * - 自动构建包
  * - 自动生成模板
@@ -338,7 +390,7 @@ gulp.task('default', function() {
     var config;
 
     FS.read(configPath)
-        .then(function(json){
+        .then(function(json) {
             var basePath = sourePath;
             config = JSON.parse(json);
 
@@ -355,9 +407,9 @@ gulp.task('default', function() {
 
                     packTask(packPath, config.packVersion).pipe(
                         buildConfig(
-                            basePath, 
-                            configFile, 
-                            config, 
+                            basePath,
+                            configFile,
+                            config,
                             plug.changeFile.config
                         )
                     );
@@ -373,8 +425,8 @@ gulp.task('default', function() {
 
                     tplTask(sourePath).pipe(
                         buildConfig(
-                            basePath, 
-                            configFile, 
+                            basePath,
+                            configFile,
                             config,
                             plug.changeFile.config
                         )
@@ -401,19 +453,39 @@ gulp.task('default', function() {
                     lessTask(file.path, distPath, plug.changeFile.less);
                 });
             }
+            //sass 自动构建
+            if (config.sass) {
+                var watchPath = path.join(basePath, config.sass, '**/*.scss');
+
+                watch(watchPath, function(file) {
+                    var paths = file.path.split(path.sep);
+
+                    var distPath = path.join(basePath, config.sass, '../css');
+                    var name = paths[paths.length - 2];
+                    if (paths[paths.length - 1].indexOf('_') === 0) {
+                        return;
+                    }
+                    if (name !== config.sass.split(path.sep).pop()) {
+                        distPath = path.join(distPath, name);
+                    }
+
+                    var changeFun = plug.changeFile.sass || function() {};
+                    sassTask(file.path, distPath, changeFun);
+                });
+            }
             //sprite 自动构建
-            if(config.sprite){
+            if (config.sprite) {
                 var watchPath = path.join(basePath, config.sprite, '**/*.png');
                 var spriteImg = null;
                 var spriteLess = null;
-                if(config.spriteImg){
+                if (config.spriteImg) {
                     spriteImg = path.join(basePath, config.spriteImg);
                 }
-                if(config.spriteLess){
+                if (config.spriteLess) {
                     spriteLess = path.join(basePath, config.spriteLess);
                 }
 
-                watch(watchPath, function(file){
+                watch(watchPath, function(file) {
                     var paths = file.path.split(path.sep);
                     paths.splice(-1, 1);
                     var sourePath = paths.join(path.sep);

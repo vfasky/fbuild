@@ -9,6 +9,7 @@
 var through2 = require('through2');
 var FS = require("q-io/fs");
 var path = require('path');
+var minify = require('html-minifier').minify;
 
 module.exports = function() {
     return through2.obj(function(file, enc, callback) {
@@ -50,7 +51,9 @@ module.exports = function() {
 
                 var map = {};
                 names.forEach(function(v, k){
-                    map[v] = args[k];
+                    map[v] = minify(args[k],{
+                        removeComments: true
+                    });
                 });
 
                 var soure = 'define("tpl/'+ name +'", function(){\n'+

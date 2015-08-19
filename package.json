@@ -1,6 +1,6 @@
 {
   "name": "fbuild",
-  "version": "2.0.6",
+  "version": "2.0.12",
   "description": "build tool",
   "repository": {
     "type": "git",
@@ -24,9 +24,12 @@
     "del": "^1.1.1",
     "gulp": "^3.8.11",
     "gulp-less": "^3.0.2",
+    "gulp-plumber": "^1.0.0",
+    "gulp-sass": "^2.0.1",
     "gulp-uglify": "^1.1.0",
     "gulp-watch": "^4.2.2",
     "gulp.spritesmith": "^3.5.3",
+    "html-minifier": "^0.7.2",
     "jsdoc": "^3.3.0",
     "lodash": "^3.6.0",
     "minami": "^1.1.0",
