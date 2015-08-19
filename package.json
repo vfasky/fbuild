@@ -1,6 +1,6 @@
 {
   "name": "fbuild",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "description": "build tool",
   "repository": {
     "type": "git",
